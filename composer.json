@@ -1,0 +1,17 @@
+{
+    "require": {
+        "monolog/monolog": "1.0.*"
+    },
+    "config": {
+        "bin-dir": "C:/wamp64/www/PHPUnit/vendor/bin/"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "classes/",
+            "Crawler\\": "classes/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.5.2"
+    }
+}
