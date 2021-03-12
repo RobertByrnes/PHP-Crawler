@@ -7,7 +7,7 @@
  */
 class Queue
 {
-    protected array $queue = [];
+    public array $queue = [];
     protected $unfinished_tasks = 0;
  
     public function __construct()
@@ -44,17 +44,17 @@ class Queue
      */
     public function pop()
     {
-        try {
-            if($this->unfinished_tasks == 0) {
-                if (!$this->open_job()) {
-                    throw new Exception(" the queue is empty."); 
-                }
+        // try {
+        //     if($this->unfinished_tasks == 0) {
+        //         if (!$this->open_job()) {
+        //             throw new Exception(" the queue is empty."); 
+        //         }
                 return array_pop($this->queue);  
-            }
-        }
-        catch (Exception $e) {
-            print("[-] ".$e."\n");
-        }         
+            // }
+        // }
+        // catch (Exception $e) {
+        //     print("[-] ".$e."\n");
+        // }         
     }
 
     public function open_job(Type $var = null)

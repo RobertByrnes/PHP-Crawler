@@ -41,10 +41,13 @@ class Spider
     {
         try {
             if ($this->sort_to_queue($spider_name, $this->extract_links($url))){
-                if (in_array($url, $this->queue)) {
-                    unset($this->queue[$url]);
+                if ((array_search($url, $this->queue))||(in_array($url, $this->crawled))) {
+                    $index = array_search($url, $this->queue);
+                    unset($this->queue[$index]);
                 }
-                $this->crawled[] = $url;
+                if (!in_array($url, $this->crawled)) {
+                    $this->crawled[] = $url;
+                }
                 printf("[+] now crawling >> ".$url." with ".$spider_name."\n");
                 printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled)."\n");
                 $this->update();
@@ -83,6 +86,7 @@ class Spider
         }
         catch (Exception $e) {
             printf("[-] ".$e."\n");
+            return array();
         }
     }
 
@@ -90,20 +94,33 @@ class Spider
     {
         foreach ($links as $link => $value) {
             if ((in_array($value, $this->crawled)) || (in_array($value, $this->queue))) {
-                unset($value);
+                unset($links[$link]);
             }
-            if($this->DOMAIN_NAME != $this->getDomain($link)){
-                unset($value);
+            if(isset($value)) {
+                if($this->DOMAIN_NAME != $this->getDomain($value)){
+                    unset($links[$link]);
+                }
             }
-            if(!preg_match("/http/", $link)) {
-                $link = $this->TARGET_URL."/".$link;
+            if(isset($value)) {
+                if(!preg_match("/http/", $value)) {
+                    $value = $this->TARGET_URL."/".$value; 
+                }
             }
-            if(!preg_match("/.$this->preg_string./", $link)) {
-                unset($value);
+            if(isset($value)) {
+                if(!preg_match("/.$this->preg_string./", $value)) {
+                    unset($links[$link]);
+                }
             }
-            $this->queue[] = $link;
+            if((!empty($links[$link]))) {
+                $this->queue[] = $links[$link];
+                $this->queue = array_filter($this->queue);
+            }
+        }
+        $this->queue = array_unique($this->queue);
+        foreach($this->queue as $link) {
             $this->QUEUE->push($link);
         }
+        $this->check_queue();
         return True;
     }
 
@@ -117,8 +134,8 @@ class Spider
     public function update()
     {
         try {
-            if ($this->Save->array_to_file($this->queue, $this->queue_path)) {
-                if ($this->Save->array_to_file($this->crawled, $this->crawled_path)) {
+            if ($this->Save->array_to_file(array_unique($this->queue), $this->queue_path)) {
+                if ($this->Save->array_to_file(array_unique($this->crawled), $this->crawled_path)) {
                     return True;
                 }
             }
@@ -126,6 +143,14 @@ class Spider
         }
         catch (Exception $e) {
             printf("[-]: ".$e."\n");
+        }
+    }
+
+    public function check_queue()
+    {
+        $count = count($this->queue);
+        if($count == 0) {
+            die();
         }
     }
 }
