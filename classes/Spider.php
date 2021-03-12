@@ -249,6 +249,7 @@ class Spider
 
     /**
      * Checks the count of the Spider::class property $queue.
+     * Exits the program once the queue is empty.
      *
      * @return void
      */
