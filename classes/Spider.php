@@ -49,7 +49,9 @@ class Spider
                     $this->crawled[] = $url;
                 }
                 printf("[+] now crawling >> ".$url." with ".$spider_name."\n");
-                printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled)."\n");
+                printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled));
+                $memory = (memory_get_usage()/1000000);
+                printf(" >> Memory Usage ".$memory."\n");
                 $this->update();
             }
         }
