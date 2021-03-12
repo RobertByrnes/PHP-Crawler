@@ -2,19 +2,27 @@
 
 ini_set("memory_limit", "-1");
 /**
- * Queue
- * 
- * A first-in, first-out data structure. 
+ * Class Queue. A first-in, first-out data structure. 
  */
 class Queue
 {
+    /**
+     * An array to hold the queue.
+     * @var array
+     */
     public array $queue = [];
+
+    /**
+     * A counter to track the number of tasks taken out of the queue, will block until tasks completed.
+     * @var integer
+     */
     protected $unfinished_tasks = 0;
  
     public function __construct()
     {
 
     }
+
     /**
      * Add an item to the end of the queue.
      * 
@@ -22,16 +30,13 @@ class Queue
      */
     public function push($item)
     {
-        // if ($this->getCount() == static::MAX_ITEMS) {
-        //     throw new QueueException ("Queue is full.");
-        // }
         $this->queue[] = $item;
     }
 
     /**
      * Take an item off the head of the queue.
      * 
-     * @return ,ixed The item. 
+     * @return mixed The item. 
      */
     public function shift()
     {
@@ -41,7 +46,7 @@ class Queue
     /**
      * Take an item off the end of the queue.
      * 
-     * @return ,ixed The item. 
+     * @return mixed The item. 
      */
     public function pop()
     {
@@ -58,7 +63,12 @@ class Queue
         }         
     }
 
-    public function open_job(Type $var = null)
+    /**
+     * Increment count of tasks taken out of the queue.
+     *
+     * @return void
+     */
+    public function open_job()
     {
         if ($this->getCount() > 0) {
             $this->unfinished_tasks++;
@@ -67,6 +77,11 @@ class Queue
         
     }
 
+    /**
+     * Decrement count of unfinished tasks.
+     *
+     * @return void
+     */
     public function task_done() : void
     {
         if ($this->unfinished_tasks > 0) {

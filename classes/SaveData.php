@@ -1,32 +1,36 @@
 <?php
 
 declare(strict_types=1);
+
+/**
+ * Class SaveData - handles all file tasks.
+ */
 class SaveData
 {
     /**
-     * file path to queue.txt
+     * file path to queue.txt.
      * @var string 
      */
     private string $queue_path;
 
     /**
-     * file path to crawled.txt
+     * file path to crawled.txt.
      * @var string 
      */
     private string $crawled_path;
 
     /**
-     * project name used as directory name in results dir
+     * project name used as directory name in results dir.
      */
     private string $PROJECT_NAME;
 
     /**
-     * url used to pre-populate queue.txt
+     * url used to pre-populate queue.txt.
      */
     private string $TARGET_URL;
 
     /**
-     * class SaveData constructor
+     * class SaveData constructor.
      * @param string $project_name 
      */
     public function __construct($project_name, $url)
@@ -38,7 +42,7 @@ class SaveData
     }
 
     /**
-     * creates the project dir within results in the root
+     * creates the project dir within results in the root.
      * @param string $directory
      * @return void
      */
@@ -57,7 +61,7 @@ class SaveData
     }
 
     /**
-     * creates queue.txt and crawled.txt in the project dir
+     * creates queue.txt and crawled.txt in the project dir.
      * @return void
      */
     public function create_files() : void
@@ -77,8 +81,8 @@ class SaveData
     }
 
     /**
-     * opens either queue.txt or crawled.txt and parses stream to array
-     * @param string $file_name
+     * opens either queue.txt or crawled.txt and parses stream to array.
+     * @param string $file_name.
      * @return array
      */
     public function file_to_array(string $file_name) : array
@@ -103,9 +107,9 @@ class SaveData
     }
 
     /**
-     * takes queue array or crawled array and writes to queue.txt or crawled.txt
-     * @param array $links
-     * @param string $file_name
+     * takes queue array or crawled array and writes to queue.txt or crawled.txt.
+     * @param array $links.
+     * @param string $file_name.
      * @return void
      */
     public function array_to_file(array $links, string $file_name) : bool
@@ -122,9 +126,9 @@ class SaveData
     }
 
     /**
-     * uses fwrite to open new files, or open - empty - then rewrite
-     * @param string $path
-     * @param string $data
+     * uses fwrite to open new files, or open - empty - then rewrite.
+     * @param string $path.
+     * @param string $data.
      * @return void
      */
     public function write_file(string $path, string $data) : void
@@ -135,9 +139,9 @@ class SaveData
     }
 
     /**
-     * appends lines to either queue.txt or crawled.txt
-     * @param string $path
-     * @param string $data
+     * appends lines to either queue.txt or crawled.txt.
+     * @param string $path.
+     * @param string $data.
      * @return void
      */
     public function append_to_file(string $path, string $data) : void
@@ -148,8 +152,8 @@ class SaveData
     }
 
     /**
-     * empties files - unused in PHP-Crawler
-     * @param string $path
+     * empties files - unused in PHP-Crawler.
+     * @param string $path.
      * @return void
      */
     public function delete_file_contents(string $path) : void

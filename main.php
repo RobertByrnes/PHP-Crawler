@@ -8,5 +8,5 @@ $SAVE = new SaveData($project_name, $url);
 $CRAWLER = new Crawler($url, $project_name);
 
 $CRAWLER->crawl();
-sleep(5);
+
 $CRAWLER->accept_job();
