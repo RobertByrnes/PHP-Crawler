@@ -7,22 +7,34 @@ class SaveData
      * file path to queue.txt
      * @var string 
      */
-    public string $queue_path;
+    private string $queue_path;
+
+    /**
+     * file path to crawled.txt
+     * @var string 
+     */
+    private string $crawled_path;
 
     /**
      * project name used as directory name in results dir
-     * @var string 
      */
-    public string $crawled_path;
+    private string $PROJECT_NAME;
+
+    /**
+     * url used to pre-populate queue.txt
+     */
+    private string $TARGET_URL;
 
     /**
      * class SaveData constructor
      * @param string $project_name 
      */
-    public function __construct($project_name)
+    public function __construct($project_name, $url)
     {
         $this->crawled_path = "results/".$project_name."/crawled.txt";
         $this->queue_path = "results/".$project_name."/queued.txt";
+        $this->PROJECT_NAME = $project_name;
+        $this->TARGET_URL = $url;
     }
 
     /**
@@ -34,13 +46,13 @@ class SaveData
     {
         try {
             if (!is_dir($directory)) {
-                printf("[+] Creating directory ".$directory." >>\n");
+                printf("[+] Creating directory >> ".$directory."\n");
                 mkdir("results/".$directory);  
             }
             throw new Exception("directory found.");
         }
         catch (Exception $e) {
-            printf("[+]".$e."\n");
+            printf("\n");
         }
     }
 
@@ -52,15 +64,15 @@ class SaveData
     {
         try {
             if (!file_exists($this->crawled_path)) {
-                $this->write_file($this->crawled_path, "");
+                $this->write_file($this->crawled_path, $this->TARGET_URL);
             }
             if (!file_exists($this->queue_path)) {
-                $this->write_file($this->queue_path, "");
+                $this->write_file($this->queue_path, $this->TARGET_URL);
             }
             throw new Exception("file already created.");
         }
         catch (Exception $e) {
-            printf("[+] ".$e."\n");
+            printf("\n");
         }
     }
 
@@ -83,7 +95,7 @@ class SaveData
             $lines[] = $line;
         }
         foreach ($lines as $line) {
-            preg_replace("\n", "", $line);
+            preg_replace("/\n/", "", $line);
             $result[] = $line;
         }
         fclose($file);
@@ -96,14 +108,17 @@ class SaveData
      * @param string $file_name
      * @return void
      */
-    public function array_to_file(array $links, string $file_name) : void
+    public function array_to_file(array $links, string $file_name) : bool
     {
         $emptied_file = fopen($file_name, "w");
         asort($links);
-        foreach ($links as $link) {
-            fwrite($emptied_file, $link."\n");
+        if(!empty($links)) {
+            foreach ($links as $link) {
+                fwrite($emptied_file, $link."\n");
+            }
         }
         fclose($emptied_file);
+        return True;
     }
 
     /**

@@ -10,15 +10,19 @@ class Spider
     private SaveData $Save;
     private array $queue = [];
     private array $crawled = [];
+    private Queue $QUEUE;
+    private string $preg_string;
 
-    public function __construct(string $url, string $name, SaveData $Save)
+    public function __construct(string $url, string $name, SaveData $Save, Queue $queue)
     {
-        $this->PROJECT_NAME = $name;
-        $this->TARGET_URL = $url;
-        $this->DOMAIN_NAME = $this->getDomain($url);
         $this->Save = $Save;
+        $this->QUEUE = $queue;
+        $this->PROJECT_NAME = $name;
         $this->queue_path = "results/".$this->PROJECT_NAME."/queued.txt";
         $this->crawled_path = "results/".$this->PROJECT_NAME."/crawled.txt";
+        $this->TARGET_URL = $url;
+        $this->DOMAIN_NAME = $this->getDomain($url);
+        $this->preg_string = $this->preg_string(); 
         $this->setup();
         $this->search($spider_name="Charlotte the Spider", $this->TARGET_URL);
     }
@@ -36,16 +40,18 @@ class Spider
     public function search($spider_name, $url) : void
     {
         try {
-            if (!$this->sort_to_queue($spider_name, $this->extract_links($url))){
+            if ($this->sort_to_queue($spider_name, $this->extract_links($url))){
                 if (in_array($url, $this->queue)) {
-                    unset($this->queue[$url]); // may be wrong index
+                    unset($this->queue[$url]);
                 }
+                $this->crawled[] = $url;
+                printf("[+] now crawling >> ".$url." with ".$spider_name."\n");
+                printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled)."\n");
                 $this->update();
             }
-            throw new Exception("extracting links from ".$url." failed.");
         }
         catch (Exception $e) {
-            printf("[-] ".$e."\n");
+            printf("[-] extracting links from ".$url." failed.\n");
         }
     }
 
@@ -59,40 +65,20 @@ class Spider
         return FALSE;
     }
 
-    private function extract_links($target_url)
+    private function extract_links($target_url) : array
     {
         $dom = new DomDocument();
+        $internalErrors = libxml_use_internal_errors(true);
+        $links = [];
         try {
-            if ($response = $dom->loadHTML($target_url)) {
-                $links = $dom->getElementsByTagName('a');
-                print_r($links);die();
-// Yeah, DOMXpath::query returns are always a DOMNodeList, which is a bit of an odd object to deal with. You basically have to iterate over it, or just use item() to get a single item:
-
-// // There's actually something in the list
-// if($result->length > 0) {
-//   $node = $result->item(0);
-//   echo "{$node->nodeName} - {$node->nodeValue}";
-// } 
-// else {
-//   // empty result set
-// }
-// Or you can loop through the values:
-
-// foreach($result as $node) {
-//   echo "{$node->nodeName} - {$node->nodeValue}";
-//   // or you can just print out the the XML:
-//   // $dom->saveXML($node);
-// }
-                $urls = [];
-                foreach($links as $link) {
-                    $url = $link->getAttribute('href');
-                    $parsed_url = parse_url($url);
-                    if(isset($parsed_url['host']) && $parsed_url['host'] === $this->DOMAIN_NAME) {
-                        $urls[] = $url;
-                    }
+            if ($dom->loadHTMLFile($target_url)) {
+                libxml_use_internal_errors($internalErrors);
+                foreach ($dom->getElementsByTagName('a') as $link) {
+                    $links[] = $link->getAttribute('href');
                 }
-                return $urls;
+                return $links;
             }
+            libxml_use_internal_errors($internalErrors);
             throw new Exception("no response from ".$url);
         }
         catch (Exception $e) {
@@ -103,26 +89,38 @@ class Spider
     private function sort_to_queue($spider_name, $links)
     {
         foreach ($links as $link => $value) {
-            if ((in_array($link, $this->crawled)) || (in_array($link, $this->queue))) {
-                continue;
+            if ((in_array($value, $this->crawled)) || (in_array($value, $this->queue))) {
+                unset($value);
             }
             if($this->DOMAIN_NAME != $this->getDomain($link)){
-                continue;
+                unset($value);
+            }
+            if(!preg_match("/http/", $link)) {
+                $link = $this->TARGET_URL."/".$link;
+            }
+            if(!preg_match("/.$this->preg_string./", $link)) {
+                unset($value);
             }
             $this->queue[] = $link;
-            $this->crawled[] = $link;
-            printf("[+] now crawling >> ".$link." with ".$spider_name."\n");
-            printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled)."\n");
+            $this->QUEUE->push($link);
         }
+        return True;
+    }
 
+    public function preg_string() : string
+    {
+        $preg_string = explode(".", $this->TARGET_URL);
+        $preg_string = $preg_string[1];
+        return $preg_string;
     }
 
     public function update()
     {
         try {
-            if (($this->Save->array_to_file($this->queue, $this->queue_path)) &&
-            ($this->Save->array_to_file($this->crawled, $this->crawled_path))) {
-                return True;
+            if ($this->Save->array_to_file($this->queue, $this->queue_path)) {
+                if ($this->Save->array_to_file($this->crawled, $this->crawled_path)) {
+                    return True;
+                }
             }
             throw new Exception("failure updating files.");
         }

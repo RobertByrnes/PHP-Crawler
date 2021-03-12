@@ -12,10 +12,10 @@ class Crawler {
     {
         $this->TARGET_URL = $url;
         $this->PROJECT_NAME = $project_name;
-        $this->queue_path = "results/".$this->PROJECT_NAME."/queued_links.txt";
+        $this->queue_path = "results/".$this->PROJECT_NAME."/queued.txt";
         $this->QUEUE = new Queue;
-        $this->SAVE = new SaveData($this->PROJECT_NAME);
-        $this->SPIDER = new Spider($this->TARGET_URL, $this->PROJECT_NAME, $this->SAVE);
+        $this->SAVE = new SaveData($this->PROJECT_NAME, $this->TARGET_URL);
+        $this->SPIDER = new Spider($this->TARGET_URL, $this->PROJECT_NAME, $this->SAVE, $this->QUEUE);
     }
 
     // public function spawn()
@@ -30,15 +30,16 @@ class Crawler {
     public function accept_job()
     {
         While (TRUE) {
-            $link = $this->QUEUE->pop();
-            $this->SPIDER->search($spider_name = "Charlotte", $link);
-            $this->QUEUE->task_done();
+            if($link = $this->QUEUE->pop()) {
+                $this->SPIDER->search($spider_name = "Charlotte", $link);
+                $this->QUEUE->task_done();
+            }
         }
     }
 
     public function crawl()
     {
-        $queued_links = $SAVE->file_to_array($this->queue_path);
+        $queued_links = $this->SAVE->file_to_array($this->queue_path);
         foreach ($queued_links as $link => $value) {
             if (count($queued_links > 0)) {
                 if (($this->SPIDER->getDomiain($this->TARGET_URL)) === ($this->SPIDER->getDomain($link))) {

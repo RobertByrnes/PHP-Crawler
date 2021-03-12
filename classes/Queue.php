@@ -62,10 +62,11 @@ class Queue
         if ($this->getCount() > 0) {
             $this->unfinished_tasks++;
         }
+        return True;
         
     }
 
-    public function task_done()
+    public function task_done() : void
     {
         if ($this->unfinished_tasks > 0) {
             $this->unfinished_tasks--;
@@ -77,7 +78,7 @@ class Queue
      * 
      * @return int The number of items
      */
-    public function getCount()
+    public function getCount() : int
     {
         return count($this->queue);
     }

@@ -2,11 +2,11 @@
 
 require_once('vendor/autoload.php');
 
-$url = "www.website.org";
+$url = "http://www.website.org";
 $project_name = "WebsiteDotOrg";
-$SAVE = new SaveData($project_name);
+$SAVE = new SaveData($project_name, $url);
 $CRAWLER = new Crawler($url, $project_name);
 
-$CRAWLER->accept_job();
-
 $CRAWLER->crawl();
+
+$CRAWLER->accept_job();
