@@ -41,6 +41,7 @@ class Spider
     {
         try {
             if ($this->sort_to_queue($spider_name, $this->extract_links($url))){
+                print("[+] now crawling >> ".$url." with ".$spider_name."\n");
                 if ((array_search($url, $this->queue))||(in_array($url, $this->crawled))) {
                     $index = array_search($url, $this->queue);
                     unset($this->queue[$index]);
@@ -48,7 +49,6 @@ class Spider
                 if (!in_array($url, $this->crawled)) {
                     $this->crawled[] = $url;
                 }
-                printf("[+] now crawling >> ".$url." with ".$spider_name."\n");
                 printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled));
                 $memory = (memory_get_usage()/1000000);
                 printf(" >> Memory Usage ".$memory."\n");
