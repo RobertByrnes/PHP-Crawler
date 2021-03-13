@@ -1,6 +1,18 @@
 {
+    "name": "robertbyrnes/phpcrawler",
+    "type": "cli-application",
+    "description": "A PHP CLI links crawler using FIFO Queue data structure and Producer/Consumer model.",
+    "keywords": ["PHP", "Crawler", "CLI", "Web Links"],
+    "homepage": "https://github.com/RobertByrnes/PHP-Crawler",
+    "authors": [
+        {
+            "name": "Robert Byrnes",
+            "email": "robbyrnes@hotmail.co.uk",
+            "role": "PHP Developer"
+        }
+    ],
     "require": {
-        "monolog/monolog": "1.0.*"
+        "php": ">=7.4"
     },
     "config": {
         "bin-dir": "C:/wamp64/www/PHPUnit/vendor/bin/"
