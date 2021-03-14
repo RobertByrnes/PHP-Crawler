@@ -58,6 +58,7 @@ class Spider
      */
     private string $preg_string;
 
+
     /**
      * Constructor for the Spider::class.
      *
@@ -105,23 +106,25 @@ class Spider
      * @param string $url
      * @return void
      */
-    public function search($spider_name, $url) : void
+    public function search($spider_name, $url) : callable
     {
         try {
+            if ((array_search($url, $this->queue))||(in_array($url, $this->crawled))) {
+                $index = array_search($url, $this->queue);
+                unset($this->queue[$index]);
+            }
+            print("[+] now crawling >> ".$url." with ".$spider_name."\n");
             if ($this->sort_to_queue($spider_name, $this->extract_links($url))){
-                print("[+] now crawling >> ".$url." with ".$spider_name."\n");
-                if ((array_search($url, $this->queue))||(in_array($url, $this->crawled))) {
-                    $index = array_search($url, $this->queue);
-                    unset($this->queue[$index]);
-                }
                 if (!in_array($url, $this->crawled)) {
                     $this->crawled[] = $url;
                 }
                 printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled));
                 $memory = (memory_get_usage()/1000000);
-                printf(" >> Memory Usage ".$memory."\n");
+                printf(" >> Memory Usage ".number_format($memory, 2)." MB\n");
                 $this->update();
             }
+            $callback = 'callBack';
+            return $callback;
         }
         catch (Exception $e) {
             printf("[-] extracting links from ".$url." failed.\n");
@@ -155,10 +158,11 @@ class Spider
         $dom = new DomDocument();
         $internalErrors = libxml_use_internal_errors(true);
         $links = [];
+        set_error_handler(function() { /* ignore errors */ });
         try {
-            if ($dom->loadHTMLFile($target_url)) {
+            if ($dom->loadHTML(file_get_contents($target_url))) {
                 libxml_use_internal_errors($internalErrors);
-                foreach ($dom->getElementsByTagName('a') as $link) {
+                foreach ($dom->getElementsByTagName('*') as $link) {
                     $links[] = $link->getAttribute('href');
                 }
                 return $links;
@@ -167,9 +171,9 @@ class Spider
             throw new Exception("no response from ".$url);
         }
         catch (Exception $e) {
-            printf("[-] ".$e."\n");
             return array();
-        }
+        }   
+        restore_error_handler();
     }
 
     /**
@@ -257,6 +261,7 @@ class Spider
     {
         $count = count($this->queue);
         if($count == 0) {
+            print("[+] Crawling finished, exiting program.");
             die();
         }
     }

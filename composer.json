@@ -13,7 +13,9 @@
         }
     ],
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "amphp/amp": "^2.5",
+        "amphp/parallel": "^1.4"
     },
     "config": {
         "bin-dir": "C:/wamp64/www/PHPUnit/vendor/bin/"
@@ -22,7 +24,10 @@
         "psr-4": {
             "": "classes/",
             "Crawler\\": "classes/"
-        }
+        },
+        "files": [
+            "custom-functions.php"
+        ]
     },
     "require-dev": {
         "phpunit/phpunit": "9.5.2"

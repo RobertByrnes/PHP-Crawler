@@ -1,44 +1,52 @@
 <?php
 
+use Amp\Loop;
+use Amp\Parallel\Worker\CallableTask;
+use Amp\Parallel\Worker\DefaultPool;
 /**
  * Class Crawler - manages queueing of tasks and passes work between Queue::class and Spider::class
  * utilising producer/consumer model with queue.
  */
 class Crawler {
     /**
-     * Homepage of the domain being crawled
+     * Homepage of the domain being crawled.
      * @var string
      */
     private string $TARGET_URL = "";
 
     /**
-     * Name of the project, also name of the directory created in root/results/
+     * Name of the project, also name of the directory created in root/results/.
      * @var string
      */
     private string $PROJECT_NAME = "";
     
     /**
-     * Filepath to queue.txt
+     * Filepath to queue.txt.
      * @var string
      */
     private string $queue_path = "";
 
     /**
-     * Object of the Spider::class
+     * Object of the Spider::class.
      */
     private Spider $SPIDER;
 
     /**
-     * Object of the Queue::class
+     * Object of the Queue::class.
      */
     private Queue $QUEUE;
 
     /**
-     * Object of the SaveData::class
+     * Object of the SaveData::class.
      */
     private SaveData $SAVE;
 
-    public function __construct($url, $project_name)
+    /**
+     * Number of workers called in (spiders) to crawl for links.
+     */
+    private int $spawned_spiders;
+
+    public function __construct($url, $project_name, $spawned_spiders)
     {
         $this->TARGET_URL = $url;
         $this->PROJECT_NAME = $project_name;
@@ -46,31 +54,32 @@ class Crawler {
         $this->QUEUE = new Queue;
         $this->SAVE = new SaveData($this->PROJECT_NAME, $this->TARGET_URL);
         $this->SPIDER = new Spider($this->TARGET_URL, $this->PROJECT_NAME, $this->SAVE, $this->QUEUE);
+        $this->spawned_spiders = $spawned_spiders;
     }
 
-    // public function spawn()
-    // {
-    //     print("[+] Creating workforce of " + str(self.WORKERS) + " more spiders >>")
-    //     for _ in range(self.WORKERS):
-    //         thread = threading.Thread(target=self.accept_job)
-    //         thread.daemon = True
-    //         thread.start()
-    // }
-    
-    /**
-     * Creates program loop while tasks in the Queue:class, takes task from Queue:class,
-     * passes to Spider::class to crawl, then confirms task done to Queue:class
-     *
-     * @return void
-     */
-    public function accept_job() : void
+    public function spawn()
     {
-        While (TRUE) {
-            if($link = $this->QUEUE->pop()) {
-                $this->SPIDER->search($spider_name = "Charlotte", $link);
-                $this->QUEUE->task_done();
-            }
+        $results= [];
+        $tasks = [];
+        for ($i=1; $i<=$this->spawned_spiders; $i++) {
+            $spider_name = "Spider ".$i;
+            $link = $this->QUEUE->pop();
+            $tasks [] = new CallableTask($this->SPIDER->search($spider_name,$link),[]);
         }
+        Loop::run(function () use (&$results, $tasks) {
+            $spiders = new DefaultPool;        
+            $coroutines = [];
+            foreach ($tasks as $index => $task) {
+                $coroutines[] = Amp\call(function () use ($spiders, $index, $task) {
+                    $result = yield $spiders->enqueue($task);
+                    $this->QUEUE->task_done();
+                    return $result;
+                });
+            }   
+            $results = yield Amp\Promise\all($coroutines);
+            return yield $spiders->shutdown();
+        });
+        $this->spawn();
     }
 
     /**
@@ -83,7 +92,7 @@ class Crawler {
         $queued_links = $this->SAVE->file_to_array($this->queue_path);
         foreach ($queued_links as $link => $value) {
             if (count($queued_links > 0)) {
-                if (($this->SPIDER->getDomiain($this->TARGET_URL)) === ($this->SPIDER->getDomain($link))) {
+                if (($this->SPIDER->getDomiain($this->TARGET_URL)) == ($this->SPIDER->getDomain($value))) {
                     print("[+] ".count($queued_links)." queued links awaiting spiders >>");
                     $this->add_job();
                 }

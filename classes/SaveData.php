@@ -49,9 +49,11 @@ class SaveData
     public function create_dir($directory) : void
     {
         try {
-            if (!is_dir($directory)) {
+                set_error_handler(function() { /* ignore errors */ });
+                if (!is_dir($directory)) {
                 printf("[+] Creating directory >> ".$directory."\n");
-                mkdir("results/".$directory);  
+                mkdir("results/".$directory);
+                restore_error_handler();  
             }
             throw new Exception("directory found.");
         }
