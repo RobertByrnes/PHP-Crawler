@@ -10,7 +10,7 @@ Implementation of Queue - Producer - Consumer Web Crawler in PHP. Uses multiple 
 
 # Install
 Install using 'composer require robertbyrnes/phpcrawler':
-Once installed 'cd' into vendor/robertbyrnes/phpcrawler to find main.php this is the one to run to run the program.  If you run into any trouble with 'class not found' errors be sure to run composer update and composer dump-autoload commands.  If run with 'php main.php' from a terminal/command prompt the help menu will show detailing the arguments required to begin a crawl. 
+Once installed 'cd' into vendor/robertbyrnes/phpcrawler to find main.php this is the file to run the program.  If you run into any trouble with 'class not found' errors be sure to run composer update and composer dump-autoload commands.  If run with 'php main.php' from a terminal/command prompt the help menu will show detailing the arguments required to begin a crawl. 
 
     /*** ARGUMENTS ***/
     Required arguments:
