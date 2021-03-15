@@ -1,15 +1,15 @@
 # PHP-Crawler
 Implementation of Queue - Producer - Consumer Web Crawler in PHP. Uses multiple processes or native threads via the amphp/parallel dependency to crawl a domain for for respondant links.
 
-                                            / _ \
-                                          \_\(_)/_/
-                                           _//o|\_
-                                            /  |
+                                                     / _ \
+                                                   \_\(_)/_/
+                                                    _//o|\_
+                                                     /  |
 @author: Robert Byrnes
 @email: robert@globalrbdev.uk
 
 # Install
-Install using composer require robertbyrnes/phpcrawler:
+Install using 'composer require robertbyrnes/phpcrawler':
 Once installed 'cd' into vendor/robertbyrnes/phpcrawler to find main.php this is the one to run to run the program.  If you run into any trouble with 'class not found' errors be sure to run composer update and composer dump-autoload commands.  If run with 'php main.php' from a terminal/command prompt the help menu will show detailing the arguments required to begin a crawl. 
 
     /*** ARGUMENTS ***/
