@@ -45,7 +45,7 @@ if(isset($options['n'])) {
     $project_name = $options['n'];
 }
 
-(empty($options['s'])) ? $spiders = 4 : $spiders = $options['s'];
+(empty($options['s'])) ? $spiders = 2 : $spiders = $options['s'];
 
 if(isset($options['v'])) {
     print("\n[+] Charlotte the spider - web links crawler, written by Robert Byrnes,

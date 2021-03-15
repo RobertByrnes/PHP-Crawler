@@ -186,24 +186,18 @@ class Spider
      */
     private function sort_to_queue($spider_name, $links)
     {
-        foreach ($links as $link => $value) {
-            if ((in_array($value, $this->crawled)) || (in_array($value, $this->queue))) {
-                unset($links[$link]);
-            }
+        foreach ($links as $link => &$value) {
             if(isset($value)) {
+                $index = strpos($value, "/");
+                if($index == 0) {
+                    $value = $this->TARGET_URL.$value;
+                }
                 if($this->DOMAIN_NAME != $this->getDomain($value)){
                     unset($links[$link]);
                 }
             }
-            if(isset($value)) {
-                if(!preg_match("/http/", $value)) {
-                    $value = $this->TARGET_URL."/".$value; 
-                }
-            }
-            if(isset($value)) {
-                if(!preg_match("/.$this->preg_string./", $value)) {
-                    unset($links[$link]);
-                }
+            if((in_array($value, $this->crawled)) || (in_array($value, $this->queue))) {
+                unset($links[$link]);
             }
             if((!empty($links[$link]))) {
                 $this->queue[] = $links[$link];
