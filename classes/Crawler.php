@@ -83,26 +83,8 @@ class Crawler {
     }
 
     /**
-     * Checks on number of task in the queue and calls add_job()
-     *
-     * @return void
-     */
-    public function crawl() : void
-    {
-        $queued_links = $this->SAVE->file_to_array($this->queue_path);
-        foreach ($queued_links as $link => $value) {
-            if (count($queued_links > 0)) {
-                if (($this->SPIDER->getDomain($this->TARGET_URL)) == ($this->SPIDER->getDomain($value))) {
-                    print("[+] ".count($queued_links)." queued links awaiting spiders >>");
-                    $this->add_job();
-                }
-            }
-        }
-    }
-
-    /**
      * Reads queue.txt using SaveData::class adding links to the queue
-     * pushing the links to the Queue::class. Finally, calls crawl()
+     * pushing the links to the Queue::class. This function is recursive one of two programming loops.
      *
      * @return void
      */
@@ -113,7 +95,6 @@ class Crawler {
             $this->QUEUE->push($link);
 
         }
-        $this->QUEUE->join();
-        $this->crawl();
+        $this->add_job();
     }
 }

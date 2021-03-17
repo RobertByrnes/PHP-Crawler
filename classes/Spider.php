@@ -201,7 +201,6 @@ class Spider
             }
             if((!empty($links[$link]))) {
                 $this->queue[] = $links[$link];
-                $this->queue = array_filter($this->queue);
             }
         }
         $this->queue = array_unique($this->queue);

@@ -33,9 +33,7 @@ utilising producer/consumer model with queue.
 - Crawler::class functions:
 
 - spawn() recursive function implementing the functionality of the parallel library to create           processes which call Spider::search() to the do the crawling.  This recursive loop will run until the Queue::class->queue is empty.  When this happens the program will exit.
-- crawl() works with add_job() calling each other until the program exits.
-- crawl() checks links remain within the domain.
-- add_job() pushes each newly found link to the queue in Queue::class.
+- add_job() Reads queue.txt using SaveData::class adding links to the queue pushing the links to the Queue::class. This function is recursive one of two programming loops.
 
 # Queue::class
 A first-in, first-out data structure.

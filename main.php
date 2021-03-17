@@ -63,8 +63,8 @@ if(isset($options['h'])) {
 function run($url, $project_name, $spiders) {
     $SAVE = new SaveData($project_name, $url);
     $CRAWLER = new Crawler($url, $project_name, $spiders);
-    $CRAWLER->crawl();
     $CRAWLER->spawn();
+    $CRAWLER->add_job();
 }
 
 function help() {
