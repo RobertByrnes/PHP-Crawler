@@ -76,9 +76,3 @@ once the crawling round is complete.
 are pushed to the queue in Queue::class.
 - update() utilises SaveData::class to write files queue.txt and crawled.txt with updated links.
 - check_queue() checks the count of the Spider::class property $queue. Exits the program once the queue is empty.
-
-
-
-
-
-
