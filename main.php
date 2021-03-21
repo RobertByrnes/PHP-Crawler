@@ -20,42 +20,24 @@ printf("
                                             /  |\n
 ");
 
-
-$shortopts  = "";
-$shortopts .= "u:";  // Required value
-$shortopts .= "n:";  // Required value
-$shortopts .= "s::"; // Optional value
-$shortopts .= "vh"; // These options do not accept values
+$shortopts = "u:n:s::vh";
 
 $longopts  = array(
-    "url:",     // Required value
+    "url:",
     "name:",
-    "spiders::",    // Optional value
-    "version",        // No value
-    "help",           // No value
+    "spiders::",
+    "version",
+    "help"
 );
 
-$options = getopt($shortopts, $longopts);
-
-if(isset($options['u'])) {
-    $url = $options['u'];
+switch ($options = getopt($shortopts, $longopts)) {
+    case isset($options['u']):     $url = $options['u'];
+    case isset($options['n']):     $project_name = $options['n']; break;
+    case isset($options['v']):     printVersion(); break;
+    case isset($options['h']):     help(); break;
 }
 
-if(isset($options['n'])) {
-    $project_name = $options['n'];
-}
-
-(empty($options['s'])) ? $spiders = 2 : $spiders = $options['s'];
-
-if(isset($options['v'])) {
-    print("\n[+] Charlotte the spider - web links crawler, written by Robert Byrnes,
-    under GPLv3 licence. https://github/RobertByrnes/PHP-Crawler\n");
-    die();
-}
-
-if(isset($options['h'])) {
-    help();
-}
+empty($options['s']) ? $spiders = 2 : $spiders = $options['s'];
 
 (!empty($url) && !empty($project_name)) ? run($url, $project_name, $spiders) : help();
 
@@ -63,7 +45,7 @@ if(isset($options['h'])) {
 function run($url, $project_name, $spiders) {
     $SAVE = new SaveData($project_name, $url);
     $CRAWLER = new Crawler($url, $project_name, $spiders);
-    $CRAWLER->spawn();
+    $CRAWLER->spawn($spiders);
     $CRAWLER->add_job();
 }
 
@@ -79,5 +61,11 @@ function help() {
         -v returns the version.
         -h prints this help message.";
     print("\n".$helpMessage."\n");
+    die();
+}
+
+function printVersion() {
+    print("\n[+] Charlotte the spider - web links crawler, written by Robert Byrnes,
+    under GPLv3 licence. https://github/RobertByrnes/PHP-Crawler\n");
     die();
 }

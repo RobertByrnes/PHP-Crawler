@@ -53,11 +53,6 @@ class Spider
      */
     private Queue $QUEUE;
 
-    /**
-     * A portion of the domain name saved to a string, used to check links remain within the domain.
-     */
-    private string $preg_string;
-
 
     /**
      * Constructor for the Spider::class.
@@ -76,7 +71,6 @@ class Spider
         $this->crawled_path = "results/".$this->PROJECT_NAME."/crawled.txt";
         $this->TARGET_URL = $url;
         $this->DOMAIN_NAME = $this->getDomain($url);
-        $this->preg_string = $this->preg_string(); 
         $this->setup();
         $this->search($spider_name="Charlotte the Spider", $this->TARGET_URL);
     }
@@ -108,16 +102,17 @@ class Spider
      */
     public function search($spider_name, $url) : callable
     {
+        print("[+] now crawling >> ".$url." with ".$spider_name."\n");
+        $index = array_search($url, $this->queue);
+
+        switch ($url) {
+            case in_array($url, $this->queue): unset($this->queue[$index]);
+            case in_array($url, $this->crawled): unset($this->queue[$index]);
+            case !in_array($url, $this->crawled): $this->crawled[] = $url;
+        }
+
         try {
-            if ((array_search($url, $this->queue))||(in_array($url, $this->crawled))) {
-                $index = array_search($url, $this->queue);
-                unset($this->queue[$index]);
-            }
-            print("[+] now crawling >> ".$url." with ".$spider_name."\n");
-            if ($this->sort_to_queue($spider_name, $this->extract_links($url))){
-                if (!in_array($url, $this->crawled)) {
-                    $this->crawled[] = $url;
-                }
+            if ($this->sort_to_queue($spider_name, $this->extract_links($url))) {
                 printf("[+] Queued ".count($this->queue)." >> Crawled ".count($this->crawled));
                 $memory = (memory_get_usage()/1000000);
                 printf(" >> Memory Usage ".number_format($memory, 2)." MB\n");
@@ -156,18 +151,16 @@ class Spider
     private function extract_links($target_url) : array
     {
         $dom = new DomDocument();
-        $internalErrors = libxml_use_internal_errors(true);
         $links = [];
         set_error_handler(function() { /* ignore errors */ });
         try {
             if ($dom->loadHTML(file_get_contents($target_url))) {
-                libxml_use_internal_errors($internalErrors);
                 foreach ($dom->getElementsByTagName('*') as $link) {
                     $links[] = $link->getAttribute('href');
                 }
+                restore_error_handler();
                 return $links;
             }
-            libxml_use_internal_errors($internalErrors);
             throw new Exception("no response from ".$url);
         }
         catch (Exception $e) {
@@ -182,25 +175,17 @@ class Spider
      *
      * @param string $spider_name
      * @param array $links
-     * @return void
+     * @return bool
      */
-    private function sort_to_queue($spider_name, $links)
+    private function sort_to_queue($spider_name, $links) : bool
     {
         foreach ($links as $link => &$value) {
-            if(isset($value)) {
-                $index = strpos($value, "/");
-                if($index == 0) {
-                    $value = $this->TARGET_URL.$value;
-                }
-                if($this->DOMAIN_NAME != $this->getDomain($value)){
-                    unset($links[$link]);
-                }
-            }
-            if((in_array($value, $this->crawled)) || (in_array($value, $this->queue))) {
-                unset($links[$link]);
-            }
-            if((!empty($links[$link]))) {
-                $this->queue[] = $links[$link];
+            switch ($value) {
+                case strpos($value, "/") == 0: $value = $this->TARGET_URL.$value;
+                case ($this->DOMAIN_NAME != $this->getDomain($value)): unset($links[$link]);
+                case in_array($value, $this->crawled): unset($links[$link]);
+                case in_array($value, $this->queue): unset($links[$link]);
+                case !empty($links[$link]): $this->queue[] = $links[$link]; 
             }
         }
         $this->queue = array_unique($this->queue);
@@ -212,19 +197,6 @@ class Spider
     }
 
     /**
-     * Explodes the url given in main.php to create a test string
-     * e.g. website from http://www.website.org.
-     *
-     * @return string
-     */
-    public function preg_string() : string
-    {
-        $preg_string = explode(".", $this->TARGET_URL);
-        $preg_string = $preg_string[1];
-        return $preg_string;
-    }
-
-    /**
      * Utilises SaveData::class to write files queue.txt and crawled.txt with updated links.
      *
      * @return void
@@ -232,7 +204,7 @@ class Spider
     public function update()
     {
         try {
-            if ($this->Save->array_to_file(array_unique($this->queue), $this->queue_path)) {
+            if ($this->Save->array_to_file($this->queue, $this->queue_path)) {
                 if ($this->Save->array_to_file(array_unique($this->crawled), $this->crawled_path)) {
                     return True;
                 }

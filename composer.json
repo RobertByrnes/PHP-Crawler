@@ -4,7 +4,7 @@
     "version": "1.1",
     "description": "A PHP CLI links crawler using FIFO Queue data structure and Producer/Consumer model.",
     "keywords": ["PHP", "Crawler", "CLI", "Web Links"],
-    "licence": "GPL-3.0",
+    "license": "GPL-3.0",
     "homepage": "https://github.com/RobertByrnes/PHP-Crawler",
     "authors": [
         {

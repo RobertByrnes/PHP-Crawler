@@ -41,12 +41,7 @@ class Crawler {
      */
     private SaveData $SAVE;
 
-    /**
-     * Number of workers called in (spiders) to crawl for links.
-     */
-    private int $spawned_spiders;
-
-    public function __construct($url, $project_name, $spawned_spiders)
+    public function __construct($url, $project_name)
     {
         $this->TARGET_URL = $url;
         $this->PROJECT_NAME = $project_name;
@@ -54,19 +49,18 @@ class Crawler {
         $this->QUEUE = new Queue;
         $this->SAVE = new SaveData($this->PROJECT_NAME, $this->TARGET_URL);
         $this->SPIDER = new Spider($this->TARGET_URL, $this->PROJECT_NAME, $this->SAVE, $this->QUEUE);
-        $this->spawned_spiders = $spawned_spiders;
     }
 
-    public function spawn()
+    public function spawn($spawned_spiders) : void
     {
-        $results= [];
+        $results = [];
         $tasks = [];
-        for ($i=1; $i<=$this->spawned_spiders; $i++) {
+        for ($i=1; $i<=$spawned_spiders; $i++) {
             $spider_name = "Spider ".$i;
             $link = $this->QUEUE->pop();
-            $tasks [] = new CallableTask($this->SPIDER->search($spider_name,$link),[]);
+            $tasks[] = new CallableTask($this->SPIDER->search($spider_name, $link),[]);
         }
-        Loop::run(function () use (&$results, $tasks) {
+        Loop::run(function() use (&$results, $tasks) {
             $spiders = new DefaultPool;        
             $coroutines = [];
             foreach ($tasks as $index => $task) {
@@ -79,12 +73,12 @@ class Crawler {
             $results = yield Amp\Promise\all($coroutines);
             return yield $spiders->shutdown();
         });
-        $this->spawn();
+        $this->spawn($spawned_spiders);
     }
 
     /**
      * Reads queue.txt using SaveData::class adding links to the queue
-     * pushing the links to the Queue::class. This function is recursive one of two programming loops.
+     * pushing the links to the Queue::class. This function is recursive, one of two programming loops.
      *
      * @return void
      */
@@ -93,7 +87,6 @@ class Crawler {
         $links = $this->SAVE->file_to_array($this->queue_path);
         foreach ($links as $link) {
             $this->QUEUE->push($link);
-
         }
         $this->add_job();
     }
