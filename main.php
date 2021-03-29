@@ -42,14 +42,16 @@ empty($options['s']) ? $spiders = 2 : $spiders = $options['s'];
 (!empty($url) && !empty($project_name)) ? run($url, $project_name, $spiders) : help();
 
 
-function run($url, $project_name, $spiders) {
+function run($url, $project_name, $spiders)
+{
     $SAVE = new SaveData($project_name, $url);
-    $CRAWLER = new Crawler($url, $project_name, $spiders);
+    $CRAWLER = new Crawler($url, $project_name, $SAVE);
     $CRAWLER->spawn($spiders);
     $CRAWLER->add_job();
 }
 
-function help() {
+function help()
+{
     $helpMessage = "\n
     /*** ARGUMENTS ***/\n
     Required arguments:
@@ -64,7 +66,8 @@ function help() {
     die();
 }
 
-function printVersion() {
+function printVersion()
+{
     print("\n[+] Charlotte the spider - web links crawler, written by Robert Byrnes,
     under GPLv3 licence. https://github/RobertByrnes/PHP-Crawler\n");
     die();

@@ -41,16 +41,24 @@ class Crawler {
      */
     private SaveData $SAVE;
 
-    public function __construct($url, $project_name)
+    public function __construct($url, $project_name, $save)
     {
         $this->TARGET_URL = $url;
         $this->PROJECT_NAME = $project_name;
         $this->queue_path = "results/".$this->PROJECT_NAME."/queued.txt";
         $this->QUEUE = new Queue;
-        $this->SAVE = new SaveData($this->PROJECT_NAME, $this->TARGET_URL);
+        $this->SAVE = $save;
         $this->SPIDER = new Spider($this->TARGET_URL, $this->PROJECT_NAME, $this->SAVE, $this->QUEUE);
     }
 
+    /**
+     * Utilises the Amp\Parallel library to created workers.
+     * Workers take a link from the queue and crawl the url for more.
+     * This function is recursive.
+     *
+     * @param int $spawned_spiders
+     * @return void
+     */
     public function spawn($spawned_spiders) : void
     {
         $results = [];
@@ -78,7 +86,7 @@ class Crawler {
 
     /**
      * Reads queue.txt using SaveData::class adding links to the queue
-     * pushing the links to the Queue::class. This function is recursive, one of two programming loops.
+     * pushing the links to the Queue::class. This function is recursive.
      *
      * @return void
      */

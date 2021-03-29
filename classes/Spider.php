@@ -185,7 +185,9 @@ class Spider
                 case ($this->DOMAIN_NAME != $this->getDomain($value)): unset($links[$link]);
                 case in_array($value, $this->crawled): unset($links[$link]);
                 case in_array($value, $this->queue): unset($links[$link]);
-                case !empty($links[$link]): $this->queue[] = $links[$link]; 
+            }
+            if(isset($links[$link])) {
+                $this->queue[] = $links[$link];
             }
         }
         $this->queue = array_unique($this->queue);
