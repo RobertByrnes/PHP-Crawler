@@ -1,5 +1,4 @@
 /vendor
-results/*
 crawler.code-workspace
 file_name
 phpunit.result.cache
